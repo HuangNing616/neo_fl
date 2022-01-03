@@ -1,7 +1,9 @@
 from party.client import PartyA, PartyB
 from party.server import PartyC
+import numpy as np
 
 
+# 纵向联邦学习LR
 def vertical_logistic_regression(XA_train,XB_train,y_train,config):
 
     # Step1 将各参与方进行初始化
@@ -52,3 +54,60 @@ def vertical_logistic_regression(XA_train,XB_train,y_train,config):
 
     print("所有迭代全部完成 Success!!!")
     return party_C.loss, party_A.theta, party_B.theta
+
+
+# 标准损失逻辑回归
+def normal_logistic_regression(X_train, y_train, config):
+
+    # 参数初始化
+    theta = np.zeros(X_train.shape[1])
+    normal_loss_list = []
+
+    ## 开始训练, 根据配置的迭代次数
+    for i in range(config['n_iter']):
+
+        # 计算梯度
+        dl=0
+        for j in range(X_train.shape[0]):
+            tmp = 1/(1+np.exp(y_train[j]*X_train[j,:].dot(theta)))
+            dl += -tmp * y_train[j]*X_train[j,:]
+
+        # 计算损失(去掉惩罚项)
+        normal_loss = np.sum(np.log(1+np.exp(-y_train*X_train.dot(theta))))/X_train.shape[0]
+        normal_loss_list.append(normal_loss)
+
+        # 更新theta
+        theta = theta - config['eta'] * dl / X_train.shape[0]
+
+    return normal_loss_list, theta
+
+
+# 泰勒近似型逻辑回归
+def taylor_logistic_regression(X_train, y_train, config):
+
+    # 参数初始化
+    theta = np.zeros(X_train.shape[1])# 将逻辑回归的训练参数theta初始化为1
+    # 记录泰勒近似的损失函数
+    taylor_loss_list = []
+
+    ## 开始训练, 根据配置的迭代次数
+    for i in range(config['n_iter']):
+
+        # 计算梯度
+        tmp = 0.25*X_train.dot(theta) - 0.5*y_train
+        dl = X_train.T.dot(tmp)
+
+        # 计算损失(去掉惩罚项)
+        taylor_loss = np.sum(-0.5*y_train * X_train.dot(theta) + 0.125 * (X_train.dot(theta)*X_train.dot(theta)))/X_train.shape[0]  + math.log(2)
+        taylor_loss_list.append(taylor_loss)
+
+        # 更新参数
+        if len(taylor_loss_list)>1 and taylor_loss_list[-2]-taylor_loss_list[-1]<0.000001:
+            print(f"前后两次迭代损失差为{taylor_loss_list[-2]-taylor_loss_list[-1]}, 提前终止迭代")
+            break
+
+        # 更新theta
+        theta = theta - config['eta'] * dl / X_train.shape[0]
+
+    # 获取最终的训练参数theta
+    return taylor_loss_list, theta

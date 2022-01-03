@@ -1,4 +1,5 @@
-from root import Party
+from party.root import Party
+import numpy as np
 
 
 # 参与方A: 在训练过程中，仅提供特征
@@ -71,7 +72,7 @@ class PartyA(Party):
         dl_a = decrypted_masked_dl_a - dt['mask']
 
         # 更新模型参数theta = self.theta - .config["eta"](学习率) / n * dl_a
-        self.theta = self.theta - config["eta"] * dl_a / self.X.shape[0]
+        self.theta = self.theta - self.config["eta"] * dl_a / self.X.shape[0]
 
 
 # 参与方B: 在训练过程中，提供特征和标签
@@ -127,7 +128,7 @@ class PartyB(Party):
         assert "encrypted_za_square" in dt.keys(), "Error: 在PartyA的Step3中 PartyB没有成功接收到PartyA发过来的'encrypted_za_square'"
         encrypted_z = 4 * encrypted_ua + dt['zb'] # 这一项是4*0.25*XA*thetaA + XB*thetaB = XA*thetaA + XB*thetaB
         # 计算加密后的Loss
-        encrypted_loss = np.sum( -0.5*self.y*encrypted_z + 0.125*dt["encrypted_za_square"] + 0.125*dt["zb"] * (8*encrypted_ua + dt["zb"]) )
+        encrypted_loss = np.sum(-0.5*self.y*encrypted_z + 0.125*dt["encrypted_za_square"] + 0.125*dt["zb"] * (8*encrypted_ua + dt["zb"]) )
 
         # 将加密后的B梯度以及加密后的loss保存成dict，并将其发送给clientC
         data_to_C = {"encrypted_masked_dl_b": encrypted_masked_dl_b, "encrypted_loss": encrypted_loss}

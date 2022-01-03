@@ -1,0 +1,13 @@
+idea/*
+build/*
+byted_magellan_ai.egg-info/*
+data/*
+models/*
+dist/*
+
+venv/*
+.DS_Store
+.vscode/*
+dataset/*
+__pycache__/*
+.pytest_cache/*

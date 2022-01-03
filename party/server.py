@@ -1,5 +1,8 @@
+from party.root import Party
 from phe import paillier
-from root import Party
+import numpy as np
+import math
+
 
 # 参与方C: 在训练过程中，提供秘钥对，扮演trusted dealer(委托人)的身份
 class PartyC(Party):
